@@ -28,6 +28,28 @@ func DiscordOnMessageHandler(
 		return
 	}
 
+
+	if m.Message.Attachments != nil {
+		for idx := range m.Message.Attachments {
+
+			url := m.Message.Attachments[idx].URL
+			attachUrl := tgbotapi.NewMessage(
+				int64(key),
+				fmt.Sprintf("*%s*: [Image](%s)", m.Author.Username,  url),
+			)
+			attachUrl.ParseMode = "markdown"
+			logger.Infof("[DiscordBot] [%s] Sending attachment %s", m.Author.Username, url)
+			_, err = telegramBot.Send(attachUrl)
+			if err != nil {
+				logger.Warnf("[DiscordBot] Failed to send attachement to telegram, %s", err)
+			}
+		}
+	}
+
+	if m.Message.Content == "" {
+		return
+	}
+	logger.Infof("[DiscordBot] [%s] %s", m.Author.Username, m.Message.Content)
 	msg := tgbotapi.NewMessage(
 		int64(key),
 		fmt.Sprintf("*%s*: %s", m.Author.Username,  m.ContentWithMentionsReplaced()),
