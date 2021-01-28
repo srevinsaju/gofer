@@ -61,7 +61,7 @@ func CreateConfig() {
 	}
 
 	outputBytes, err := json.Marshal(cfg)
-	err = ioutil.WriteFile("gopher.json", outputBytes, 0644)
+	err = ioutil.WriteFile("gofer.json", outputBytes, 0644)
 	if err != nil {
 		logger.Fatal(err)
 		return
