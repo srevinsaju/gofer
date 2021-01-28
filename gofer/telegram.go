@@ -16,6 +16,7 @@ func TelegramOnMessageHandler(telegramBot *tgbotapi.BotAPI, discordBot *discordg
 	updates, err := telegramBot.GetUpdatesChan(u)
 	if err != nil {
 		logger.Fatal("Failed to get updates channel")
+		return
 	}
 
 	for update := range updates {
@@ -28,7 +29,7 @@ func TelegramOnMessageHandler(telegramBot *tgbotapi.BotAPI, discordBot *discordg
 			chanId = string(val)
 		} else {
 			logger.Infof("[TelegramBot] Received an event from unrecognized channel")
-			return
+			continue
 		}
 		logger.Infof("[TelegramBot] [%s] %s", update.Message.From.FirstName, update.Message.Text)
 
