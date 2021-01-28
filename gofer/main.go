@@ -78,7 +78,7 @@ func main() {
 
 
 	logger.Infof("[DiscordBot] Bot is now running.  Press CTRL-C to exit.")
-	go TelegramOnMessageHandler(telegramBot, discordBot, cfg)
+	go TelegramEventHandler(telegramBot, discordBot, cfg)
 	// Open a websocket connection to Discord and begin listening.
 	err = discordBot.Open()
 	if err != nil {
