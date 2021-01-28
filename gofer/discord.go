@@ -28,14 +28,13 @@ func DiscordOnMessageHandler(
 		return
 	}
 
-
 	if m.Message.Attachments != nil {
 		for idx := range m.Message.Attachments {
 
 			url := m.Message.Attachments[idx].URL
 			attachUrl := tgbotapi.NewMessage(
 				int64(key),
-				fmt.Sprintf("*%s*: [Image](%s)", m.Author.Username,  url),
+				fmt.Sprintf("*%s*: [Image](%s)", m.Author.Username, url),
 			)
 			attachUrl.ParseMode = "markdown"
 			logger.Infof("[DiscordBot] [%s] Sending attachment %s", m.Author.Username, url)
@@ -52,7 +51,7 @@ func DiscordOnMessageHandler(
 	logger.Infof("[DiscordBot] [%s] %s", m.Author.Username, m.Message.Content)
 	msg := tgbotapi.NewMessage(
 		int64(key),
-		fmt.Sprintf("*%s*: %s", m.Author.Username,  m.ContentWithMentionsReplaced()),
+		fmt.Sprintf("*%s*: %s", m.Author.Username, m.ContentWithMentionsReplaced()),
 	)
 	// set markdown mode for formatting the username
 	msg.ParseMode = "markdown"

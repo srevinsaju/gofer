@@ -11,11 +11,9 @@ import (
 
 var logger = log.New(os.Stdout)
 
-
-
 func main() {
 	// get last command
-	command := os.Args[len(os.Args) - 1]
+	command := os.Args[len(os.Args)-1]
 	if command == "create" {
 		CreateConfig()
 		logger.Info("Config file written. Call `gofer` like")
@@ -41,15 +39,12 @@ func main() {
 		logger.Fatal("The specified path does not exist")
 	}
 
-
-
 	goferCfgFile := command
 
 	cfg, err := ConfigFromFile(goferCfgFile)
 	if err != nil {
 		logger.Fatal(err)
 	}
-
 
 	telegramBotToken := cfg.TelegramApiToken
 	// create the telegram bot
@@ -76,7 +71,6 @@ func main() {
 
 	discordBot.Identify.Intents = discordgo.IntentsGuildMessages
 
-
 	logger.Infof("[DiscordBot] Bot is now running.  Press CTRL-C to exit.")
 	go TelegramEventHandler(telegramBot, discordBot, cfg)
 	// Open a websocket connection to Discord and begin listening.
@@ -85,7 +79,6 @@ func main() {
 		logger.Infof("error opening connection, %s", err)
 		return
 	}
-
 
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)

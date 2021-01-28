@@ -6,7 +6,6 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
-
 func TelegramMediaWrapper(
 	discordBot *discordgo.Session,
 	telegramBot *tgbotapi.BotAPI,
@@ -25,8 +24,6 @@ func TelegramMediaWrapper(
 		return
 	}
 }
-
-
 
 func TelegramOnMessageHandler(telegramBot *tgbotapi.BotAPI, update tgbotapi.Update, discordBot *discordgo.Session, config GoferConfig) {
 	var chanId string
@@ -58,12 +55,11 @@ func TelegramOnMessageHandler(telegramBot *tgbotapi.BotAPI, update tgbotapi.Upda
 	logger.Infof("[TelegramBot] [%s] %s", update.Message.From.FirstName, update.Message.Text)
 	_, err := discordBot.ChannelMessageSend(
 		chanId,
-		fmt.Sprintf("**%s**: %s", update.Message.From.FirstName ,update.Message.Text))
+		fmt.Sprintf("**%s**: %s", update.Message.From.FirstName, update.Message.Text))
 	if err != nil {
 		logger.Infof("[DiscordBot] Failed to send message %s", err)
 	}
 }
-
 
 func TelegramOnEditedMessageHandler(_ *tgbotapi.BotAPI, update tgbotapi.Update, discordBot *discordgo.Session, config GoferConfig) {
 	var chanId string
@@ -77,12 +73,11 @@ func TelegramOnEditedMessageHandler(_ *tgbotapi.BotAPI, update tgbotapi.Update, 
 
 	_, err := discordBot.ChannelMessageSend(
 		chanId,
-		fmt.Sprintf("**%s**: * %s", update.EditedMessage.From.FirstName ,update.EditedMessage.Text))
+		fmt.Sprintf("**%s**: * %s", update.EditedMessage.From.FirstName, update.EditedMessage.Text))
 	if err != nil {
 		logger.Infof("[DiscordBot] Failed to send message %s", err)
 	}
 }
-
 
 func TelegramEventHandler(telegramBot *tgbotapi.BotAPI, discordBot *discordgo.Session, config GoferConfig) {
 
@@ -112,7 +107,5 @@ func TelegramEventHandler(telegramBot *tgbotapi.BotAPI, discordBot *discordgo.Se
 
 		handler(telegramBot, update, discordBot, config)
 
-
 	}
 }
-

@@ -8,7 +8,6 @@ import (
 	"strings"
 )
 
-
 func CreateConfig() {
 	cfg := GoferConfig{}
 	cfg.Channels = map[TelegramChannel]DiscordChannel{}
@@ -34,7 +33,6 @@ func CreateConfig() {
 	}
 	fmt.Println("")
 	cfg.DiscordApiToken = inputBuf
-
 
 	for true {
 		fmt.Println("Enter Telegram ChanID followed by Discord Channel Id separated by")
