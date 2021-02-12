@@ -8,6 +8,8 @@ import (
 	"strings"
 )
 
+/* CreateConfig helps to interactively create a configuration
+from user input. */
 func CreateConfig() {
 	cfg := GoferConfig{}
 	cfg.Channels = map[TelegramChannel]DiscordChannel{}
@@ -67,6 +69,7 @@ func CreateConfig() {
 
 }
 
+/* ConfigFromFile creates */
 func ConfigFromFile(filepath string) (GoferConfig, error) {
 	rawData, err := ioutil.ReadFile(filepath)
 	var cfg GoferConfig

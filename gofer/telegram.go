@@ -34,11 +34,6 @@ func TelegramOnMessageHandler(telegramBot *tgbotapi.BotAPI, update tgbotapi.Upda
 		return
 	}
 
-	if update.Message.Document != nil {
-		logger.Infof("[TelegramBot] [%s] %s", update.Message.From.FirstName, "Sending File")
-		TelegramMediaWrapper(discordBot, telegramBot, update.Message.Document.FileID, chanId)
-	}
-
 	if update.Message.Photo != nil {
 		logger.Infof("[TelegramBot] [%s] %s", update.Message.From.FirstName, "Sending Photo")
 		photoPointer := *update.Message.Photo
@@ -46,6 +41,9 @@ func TelegramOnMessageHandler(telegramBot *tgbotapi.BotAPI, update tgbotapi.Upda
 			photoFile := photoPointer[photoIdx]
 			TelegramMediaWrapper(discordBot, telegramBot, photoFile.FileID, chanId)
 		}
+	} else if update.Message.Document != nil {
+		logger.Infof("[TelegramBot] [%s] %s", update.Message.From.FirstName, "Sending File")
+		TelegramMediaWrapper(discordBot, telegramBot, update.Message.Document.FileID, chanId)
 	}
 
 	if update.Message.Text == "" {
