@@ -3,23 +3,22 @@ package main
 import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/go-telegram-bot-api/telegram-bot-api"
+	"github.com/srevinsaju/gofer/platforms/discord"
+	"github.com/srevinsaju/gofer/platforms/telegram"
+	"github.com/srevinsaju/gofer/types"
 	"github.com/withmandala/go-log"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 )
 
 var logger = log.New(os.Stdout)
 
+
 func main() {
 	// get last command
 	command := os.Args[len(os.Args)-1]
-	if command == "create" {
-		CreateConfig()
-		logger.Info("Config file written. Call `gofer` like")
-		logger.Infof("~ $ gofer path/to/config.json")
-		return
-	}
 
 	if command == "gofer" {
 		// the user has not provided any commands along with the executable name
@@ -47,43 +46,75 @@ func main() {
 	}
 
 	telegramBotToken := cfg.TelegramApiToken
-	// create the telegram bot
-	telegramBot, err := tgbotapi.NewBotAPI(telegramBotToken)
-	if err != nil {
-		logger.Fatal(err)
-	}
+
 
 	// create the discord bot
-	discordBotToken := cfg.DiscordApiToken
-	if discordBotToken == "" {
-		logger.Fatal("config.discordApiToken is not provided")
-	}
-	discordBot, err := discordgo.New("Bot " + discordBotToken)
-	if err != nil {
-		logger.Fatal("[DiscordBot] Failed to initialize discord bot")
-		return
+	discordListeners := types.Listeners{
+		File:    discord.SendFile,
+		Message: discord.SendMessage,
+		Misc:    discord.SendMisc,
+		Photo:   discord.SendImage,
+		EditMessage: discord.SendEdit,
 	}
 
-	telegramBot.Debug = false
-	discordBot.AddHandler(func(s *discordgo.Session, m *discordgo.MessageCreate) {
-		DiscordOnMessageHandler(s, m, telegramBot, cfg)
-	})
-
-	discordBot.Identify.Intents = discordgo.IntentsGuildMessages
-
-	logger.Infof("[DiscordBot] Bot is now running.  Press CTRL-C to exit.")
-	go TelegramEventHandler(telegramBot, discordBot, cfg)
-	// Open a websocket connection to Discord and begin listening.
-	err = discordBot.Open()
-	if err != nil {
-		logger.Infof("error opening connection, %s", err)
-		return
+	telegramListeners := types.Listeners{
+		File:    telegram.SendFile,
+		Message: telegram.SendMessage,
+		Misc:    telegram.SendMisc,
+		Photo:   telegram.SendPhoto,
+		EditMessage: telegram.SendEdit,
 	}
+
+	ctx := &types.Context{
+		Config: cfg,
+		Listener: map[string]types.Listeners{
+			"discord": discordListeners,
+			"telegram": telegramListeners,
+		},
+	}
+
+	if ctx.Config.DiscordApiToken != "" {
+		discordBotToken := cfg.DiscordApiToken
+		if discordBotToken == "" {
+			logger.Fatal("config.discordApiToken is not provided")
+		}
+		discordBot, err := discordgo.New("Bot " + discordBotToken)
+		if err != nil {
+			logger.Fatal("[DiscordBot] Failed to initialize discord bot")
+			return
+		}
+		ctx.Discord = discordBot
+
+		ctx.Discord.AddHandler(func(s *discordgo.Session, m *discordgo.MessageCreate) {
+			discord.EventHandler(ctx, s, m)
+		})
+		ctx.Discord.Identify.Intents = discordgo.IntentsGuildMessages
+	}
+
+	if ctx.Config.TelegramApiToken != "" {
+		// create the telegram bot
+		telegramBot, err := tgbotapi.NewBotAPI(telegramBotToken)
+		if err != nil {
+			logger.Fatal(err)
+		}
+		telegramBot.Debug = false
+		ctx.Telegram = telegramBot
+	}
+
+
+
+	go telegram.EventHandler(*ctx)
+	go ctx.Discord.Open()
+
+	for true {
+		time.Sleep(time.Second * 2)
+	}
+
 
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
 	<-sc
-	err = discordBot.Close()
+	err = ctx.Discord.Close()
 	if err != nil {
 		logger.Fatal(err)
 	}
