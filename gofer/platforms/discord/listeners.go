@@ -10,7 +10,8 @@ import (
 func SendMessage(ctx types.Context, channel types.ChannelMapping, message types.GoferMessage ) error {
 	var strMessage string
 	if message.ReplyTo != "" {
-		strMessage = fmt.Sprintf("> %s \n**%s**: %s", message.ReplyTo, message.From, message.Message)
+		strMessage = fmt.Sprintf("> _In reply to **%s**: %s_\n**%s**: %s",
+			message.ReplyTo, message.ReplyToMessage, message.From, message.Message)
 	} else {
 		strMessage = fmt.Sprintf("**%s**: %s", message.From, message.Message)
 	}
@@ -33,11 +34,8 @@ func SendImage(ctx types.Context, channel types.ChannelMapping, photo types.Gofe
 		description = fmt.Sprintf("%s", photo.Message)
 	}
 	embed := discordgo.MessageEmbed{
-		Type:        "",
 		Title:       photo.From,
 		Description: description,
-		Timestamp:   "",
-		Footer:      nil,
 		Image:       &image,
 	}
 	_, err := ctx.Discord.ChannelMessageSendEmbed(

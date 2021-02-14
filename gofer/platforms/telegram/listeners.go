@@ -10,7 +10,9 @@ import (
 func SendMessage(ctx types.Context, channel types.ChannelMapping, message types.GoferMessage ) error {
 	var strMessage string
 	if message.ReplyTo != "" {
-		strMessage = fmt.Sprintf("<blockquote>%s </blockquote>\n<b>%s</b>: %s", message.ReplyTo, message.From, message.Message)
+		strMessage = fmt.Sprintf(
+			"<blockquote><i>In reply to <b>%s</b></i>: %s</blockquote>\n<b>%s</b>: %s",
+			message.ReplyTo, message.ReplyToMessage, message.From, message.Message)
 	} else {
 		strMessage = fmt.Sprintf("<b>%s</b>: %s", message.From, message.Message)
 	}
@@ -42,7 +44,7 @@ func SendPhoto(ctx types.Context, channel types.ChannelMapping, photo types.Gofe
 	if photo.ReplyToMessage != "" {
 		strMessage = fmt.Sprintf("* <i>In reply to %s</i>\n<blockquote>%s</blockquote>\n\n<i>%s sent a photo</i>\n<a href=\"%s\">.</a>", photo.ReplyTo, photo.ReplyToMessage, photo.From, photo.Url)
 	} else {
-		strMessage = fmt.Sprintf("* <i>%s sent a photo</i>\n<a href=\"%s\">.</a>", photo.From, photo.Url)
+		strMessage = fmt.Sprintf("* <i>%s sent a photo</i>\n<a href=\"%s\">.</a> %s", photo.From, photo.Url, photo.Message)
 	}
 
 	msg := tgbotapi.NewMessage(channel.TelegramChanId, strMessage)
@@ -59,6 +61,9 @@ func SendFile(ctx types.Context, channel types.ChannelMapping, file types.GoferF
 	strMessage := fmt.Sprintf("* <i><b>%s</b> sent a file on %s</i>", file.From, file.Origin)
 	if file.Url != "" {
 		strMessage = strMessage + "\n\n" + file.Url
+	}
+	if file.Message != "" {
+		strMessage = strMessage + "\n\n" + file.Message
 	}
 
 	msg := tgbotapi.NewMessage(channel.TelegramChanId, strMessage)

@@ -28,7 +28,7 @@ func EventHandler(ctx types.Context) {
 			// this contains an edited message
 			channel, err := GetChannels(update.EditedMessage.Chat.ID, ctx.Config.Channels)
 			if err != nil {
-				return 
+				continue
 			}
 
 			orchestra.SendEditMessageTo(ctx, channel, "telegram", types.GoferEditedMessage{
@@ -36,13 +36,13 @@ func EventHandler(ctx types.Context) {
 				Message:        update.Message.Text,
 				Origin:         "telegram",
 			})
-			return
+			continue
 		}
 
 		if update.Message != nil {
 			channel, err := GetChannels(update.Message.Chat.ID, ctx.Config.Channels)
 			if err != nil {
-				return
+				continue
 			}
 
 			replyMessage := ""
@@ -68,24 +68,24 @@ func EventHandler(ctx types.Context) {
 				url, err := ctx.Telegram.GetFileDirectURL(bestPhoto.FileID)
 				if err != nil {
 					logger.Warnf("Couldnt get direct URL, %s", err)
-					return
+					continue
 				}
 				orchestra.SendPhotoTo(ctx, channel, "telegram", types.GoferPhoto{
 					From:           update.Message.From.FirstName,
 					Url:            url,
-					Message:        update.Message.Text,
+					Message:        update.Message.Caption,
 					ReplyTo:        replyTo,
 					Origin:         "telegram",
 					ReplyToMessage: replyMessage,
 				})
-				return
+				continue
 			}
 
 			if update.Message.Document != nil {
 				url, err := ctx.Telegram.GetFileDirectURL(update.Message.Document.FileID)
 				if err != nil {
 					logger.Warnf("Couldnt get direct URL, %s", err)
-					return
+					continue
 				}
 				orchestra.SendFileTo(ctx, channel, "telegram", types.GoferFile{
 					From:           update.Message.From.FirstName,
@@ -95,7 +95,7 @@ func EventHandler(ctx types.Context) {
 					Origin:         "telegram",
 					ReplyToMessage: replyMessage,
 				})
-				return
+				continue
 			}
 
 			if update.Message.Sticker != nil {
@@ -111,6 +111,11 @@ func EventHandler(ctx types.Context) {
 
 			}
 
+			if update.Message.Text == "" {
+				continue
+			}
+
+			logger.Infof("telegram:[%s] %s", update.Message.From.FirstName, update.Message.Text)
 			orchestra.SendMessageTo(ctx, channel, "telegram", types.GoferMessage{
 				From:           update.Message.From.FirstName,
 				Message:        update.Message.Text,

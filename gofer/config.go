@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 )
 
-
 /* ConfigFromFile creates */
 func ConfigFromFile(filepath string) (types.GoferConfig, error) {
 	rawData, err := ioutil.ReadFile(filepath)

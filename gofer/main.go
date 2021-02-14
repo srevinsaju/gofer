@@ -15,7 +15,6 @@ import (
 
 var logger = log.New(os.Stdout)
 
-
 func main() {
 	// get last command
 	command := os.Args[len(os.Args)-1]
@@ -47,33 +46,33 @@ func main() {
 
 	telegramBotToken := cfg.TelegramApiToken
 
-
 	// create the discord bot
 	discordListeners := types.Listeners{
-		File:    discord.SendFile,
-		Message: discord.SendMessage,
-		Misc:    discord.SendMisc,
-		Photo:   discord.SendImage,
+		File:        discord.SendFile,
+		Message:     discord.SendMessage,
+		Misc:        discord.SendMisc,
+		Photo:       discord.SendImage,
 		EditMessage: discord.SendEdit,
 	}
 
 	telegramListeners := types.Listeners{
-		File:    telegram.SendFile,
-		Message: telegram.SendMessage,
-		Misc:    telegram.SendMisc,
-		Photo:   telegram.SendPhoto,
+		File:        telegram.SendFile,
+		Message:     telegram.SendMessage,
+		Misc:        telegram.SendMisc,
+		Photo:       telegram.SendPhoto,
 		EditMessage: telegram.SendEdit,
 	}
 
 	ctx := &types.Context{
 		Config: cfg,
 		Listener: map[string]types.Listeners{
-			"discord": discordListeners,
+			"discord":  discordListeners,
 			"telegram": telegramListeners,
 		},
 	}
 
 	if ctx.Config.DiscordApiToken != "" {
+
 		discordBotToken := cfg.DiscordApiToken
 		if discordBotToken == "" {
 			logger.Fatal("config.discordApiToken is not provided")
@@ -89,6 +88,8 @@ func main() {
 			discord.EventHandler(ctx, s, m)
 		})
 		ctx.Discord.Identify.Intents = discordgo.IntentsGuildMessages
+
+		logger.Infof("Authorized on Discord Account")
 	}
 
 	if ctx.Config.TelegramApiToken != "" {
@@ -101,15 +102,14 @@ func main() {
 		ctx.Telegram = telegramBot
 	}
 
-
-
+	logger.Info("Starting Telegram event handler")
 	go telegram.EventHandler(*ctx)
+	logger.Info("Starting Discord event handler")
 	go ctx.Discord.Open()
 
 	for true {
 		time.Sleep(time.Second * 2)
 	}
-
 
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)

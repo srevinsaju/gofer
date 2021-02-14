@@ -26,12 +26,18 @@ func EventHandler(ctx *types.Context, s *discordgo.Session, m *discordgo.Message
 		return
 	}
 
-	if m.Message.Attachments != nil {
+
+	from := m.Author.Username
+	if m.Member.Nick != "" {
+		from = m.Member.Nick
+	}
+
+	if m.Message.Attachments != nil && len(m.Message.Attachments) >= 1 {
 		for idx := range m.Message.Attachments {
 
 			url := m.Message.Attachments[idx].URL
 			orchestra.SendFileTo(*ctx, channel, "discord", types.GoferFile{
-				From:           m.Message.Member.Nick,
+				From:           from,
 				Url:            url,
 				Message:        m.Message.ContentWithMentionsReplaced(),
 				ReplyTo:        "",  // fixme
@@ -42,13 +48,16 @@ func EventHandler(ctx *types.Context, s *discordgo.Session, m *discordgo.Message
 		return
 	}
 
+	logger.Debug("Checking content")
 	if m.Message.Content == "" {
 		return
 	}
 
-	logger.Infof("[%s] %s", m.Author.Username, m.Message.Content)
+
+	logger.Debug("Content check passed")
+	logger.Infof("discord:[%s] %s", m.Author.Username, m.Message.Content)
 	orchestra.SendMessageTo(*ctx, channel, "discord", types.GoferMessage{
-		From:           m.Message.Member.Nick,
+		From:           from,
 		Message:        m.Message.ContentWithMentionsReplaced(),
 		ReplyTo:        "", // fixme
 		ReplyToMessage: "",
