@@ -28,7 +28,7 @@ func EventHandler(ctx *types.Context, s *discordgo.Session, m *discordgo.Message
 
 
 	from := m.Author.Username
-	if m.Member.Nick != "" {
+	if m.Member != nil && m.Member.Nick != "" {
 		from = m.Member.Nick
 	}
 
