@@ -32,8 +32,8 @@ func EventHandler(ctx types.Context) {
 			}
 
 			orchestra.SendEditMessageTo(ctx, channel, "telegram", types.GoferEditedMessage{
-				From:           update.Message.From.FirstName,
-				Message:        update.Message.Text,
+				From:           update.EditedMessage.From.FirstName,
+				Message:        update.EditedMessage.Text,
 				Origin:         "telegram",
 			})
 			continue
