@@ -21,7 +21,7 @@ jobs:
     - name: Build
       run: |
         cd gofer
-        go build -ldflags "-s -w" .
+        go build -ldflags "-s -w -X main.BuildVersion=$(git describe --tags --always) -X main.BuildTime=$(date +%s)" .
 
     - name: Release Continuous
       uses: marvinpinto/action-automatic-releases@latest

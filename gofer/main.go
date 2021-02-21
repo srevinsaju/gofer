@@ -16,9 +16,23 @@ import (
 
 var logger = log.New(os.Stdout)
 
+// https://polyverse.com/blog/how-to-embed-versioning-information-in-go-applications-f76e2579b572/
+var (
+	BuildVersion string = ""
+	BuildTime    string = ""
+)
+
+
 func main() {
 	// get last command
 	command := os.Args[len(os.Args)-1]
+
+	if BuildVersion != "" || BuildTime != "" {
+		logger.Infof("Gofer %s Build:%s", BuildVersion, BuildTime)
+	} else {
+		logger.Info("Gofer (local dev build)")
+	}
+
 
 	if command == "gofer" {
 		// the user has not provided any commands along with the executable name
