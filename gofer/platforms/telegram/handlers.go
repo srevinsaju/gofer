@@ -21,8 +21,6 @@ func EventHandler(ctx types.Context) {
 		if update.EditedMessage == nil && update.Message == nil { // ignore any non-Message Updates
 			continue
 		}
-
-
 		
 		if update.EditedMessage != nil {
 			// this contains an edited message

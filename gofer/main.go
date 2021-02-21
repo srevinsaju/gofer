@@ -4,6 +4,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/srevinsaju/gofer/platforms/discord"
+	"github.com/srevinsaju/gofer/platforms/matrix"
 	"github.com/srevinsaju/gofer/platforms/telegram"
 	"github.com/srevinsaju/gofer/types"
 	"github.com/withmandala/go-log"
@@ -63,11 +64,20 @@ func main() {
 		EditMessage: telegram.SendEdit,
 	}
 
+	matrixListeners := types.Listeners{
+		File:        matrix.SendFile,
+		Message:     matrix.SendMessage,
+		Misc:        matrix.SendMisc,
+		Photo:       matrix.SendPhoto,
+		EditMessage: matrix.SendEdit,
+	}
+
 	ctx := &types.Context{
 		Config: cfg,
 		Listener: map[string]types.Listeners{
 			"discord":  discordListeners,
 			"telegram": telegramListeners,
+			"matrix":   matrixListeners,
 		},
 	}
 
@@ -102,10 +112,18 @@ func main() {
 		ctx.Telegram = telegramBot
 	}
 
+	if ctx.Config.MatrixPassword != "" {
+		matrix.Setup(ctx)
+	}
+
 	logger.Info("Starting Telegram event handler")
 	go telegram.EventHandler(*ctx)
+
 	logger.Info("Starting Discord event handler")
 	go ctx.Discord.Open()
+
+	logger.Infof("Starting Matrix event handler")
+	go matrix.EventHandler(*ctx)
 
 	for true {
 		time.Sleep(time.Second * 2)
