@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"github.com/bwmarrin/discordgo"
 	"github.com/srevinsaju/gofer/types"
+	"mime"
+	"net/http"
 )
 
 
@@ -25,25 +27,40 @@ func SendMessage(ctx types.Context, channel types.ChannelMapping, message types.
 
 
 func SendImage(ctx types.Context, channel types.ChannelMapping, photo types.GoferPhoto ) error {
-	image := discordgo.MessageEmbedImage{URL: photo.Url}
-
 	description := ""
 	if photo.ReplyTo != "" {
 		description = fmt.Sprintf("In reply to _%s_ \n> _%s_ \n\n %s", photo.ReplyTo, photo.ReplyToMessage, photo.Message )
 	} else {
 		description = fmt.Sprintf("%s", photo.Message)
 	}
-	embed := discordgo.MessageEmbed{
-		Title:       photo.From,
-		Description: description,
-		Image:       &image,
-	}
-	_, err := ctx.Discord.ChannelMessageSendEmbed(
-		channel.DiscordChanId,
-		&embed,
-	)
+
+	r, err := http.Get(photo.Url)
 	if err != nil {
-		logger.Warnf("Failed to send file to %s, %s", channel.DiscordChanId, err)
+		logger.Warnf("Failed to get %s", photo.Url)
+		return err
+	}
+	if r.StatusCode != 200 {
+		return nil
+	}
+
+	logger.Debugf("Content type: %s", r.Header.Get("Content-Type"))
+
+	contentType := r.Header.Get("Content-Type")
+	extension, err := mime.ExtensionsByType(contentType)
+
+	_, err = ctx.Discord.ChannelMessageSendComplex(channel.DiscordChanId, &discordgo.MessageSend{
+		Content: fmt.Sprintf("_**%s** sent a photo_\n %s", photo.From, description),
+		Files: []*discordgo.File{
+			{
+				Name:        fmt.Sprintf("image.%s", extension[0]),
+				ContentType: contentType,
+				Reader:      r.Body,
+			},
+		},
+	})
+
+	if err != nil {
+		logger.Warnf("Failed to send image to %s, %s", channel.DiscordChanId, err)
 		return err
 	}
 	return nil
