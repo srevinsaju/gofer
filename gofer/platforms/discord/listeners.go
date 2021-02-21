@@ -68,6 +68,14 @@ func SendImage(ctx types.Context, channel types.ChannelMapping, photo types.Gofe
 
 func SendFile(ctx types.Context, channel types.ChannelMapping, file types.GoferFile ) error {
 	strMessage := fmt.Sprintf("_* %s sent a file on %s_", file.From, file.Origin)
+
+	if file.Url != "" {
+		strMessage = strMessage + "\n\n" + file.Url
+	}
+	if file.Message != "" {
+		strMessage = strMessage + "\n\n" + file.Message
+	}
+
 	_, err := ctx.Discord.ChannelMessageSend(channel.DiscordChanId, strMessage)
 	if err != nil {
 		logger.Infof("Failed to send message %s", err)
