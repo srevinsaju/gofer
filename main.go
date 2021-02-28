@@ -86,14 +86,11 @@ func main() {
 		EditMessage: matrix.SendEdit,
 	}
 
+    listeners := map[string]types.Listeners{}
+
 	ctx := &types.Context{
 		Config: cfg,
-		Listener: map[string]types.Listeners{
-			"discord":  discordListeners,
-			"telegram": telegramListeners,
-			"matrix":   matrixListeners,
-		},
-	}
+    }
 
 	if ctx.Config.DiscordApiToken != "" {
 
@@ -114,6 +111,7 @@ func main() {
 		ctx.Discord.Identify.Intents = discordgo.IntentsGuildMessages
 
 		logger.Infof("Authorized on Discord Account")
+        listeners["discord"] = discordListeners
 	}
 
 	if ctx.Config.TelegramApiToken != "" {
@@ -124,20 +122,29 @@ func main() {
 		}
 		telegramBot.Debug = false
 		ctx.Telegram = telegramBot
+        listeners["telegram"] = telegramListeners
 	}
 
 	if ctx.Config.MatrixPassword != "" {
 		matrix.Setup(ctx)
+        listeners["matrix"] = matrixListeners
 	}
 
-	logger.Info("Starting Telegram event handler")
-	go telegram.EventHandler(*ctx)
+    ctx.Listener = listeners
+	if ctx.Config.DiscordApiToken != "" {
+		logger.Info("Starting Telegram event handler")
+		go telegram.EventHandler(*ctx)
+	}
 
-	logger.Info("Starting Discord event handler")
-	go ctx.Discord.Open()
+	if ctx.Config.TelegramApiToken != "" {
+		logger.Info("Starting Discord event handler")
+		go ctx.Discord.Open()
+	}
 
-	logger.Infof("Starting Matrix event handler")
-	go matrix.EventHandler(*ctx)
+    if ctx.Config.MatrixPassword != "" {
+		logger.Infof("Starting Matrix event handler")
+    	go matrix.EventHandler(*ctx)
+    }
 
 	for true {
 		time.Sleep(time.Second * 2)
@@ -146,8 +153,11 @@ func main() {
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
 	<-sc
-	err = ctx.Discord.Close()
-	if err != nil {
-		logger.Fatal(err)
+
+	if ctx.Config.DiscordApiToken != "" {
+		err = ctx.Discord.Close()
+		if err != nil {
+			logger.Fatal(err)
+		}
 	}
 }
