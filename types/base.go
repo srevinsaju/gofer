@@ -40,4 +40,5 @@ type ChannelMapping struct {
 	DiscordChanId string `json:"discord_chan_id,omitempty"`
 	TelegramChanId int64 `json:"telegram_chan_id,omitempty"`
 	MatrixChanId string `json:"matrix_chan_id,omitempty"`
+	DiscordWebhook string `json:"discord_webhook,omitempty"`
 }

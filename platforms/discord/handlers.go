@@ -21,6 +21,9 @@ func EventHandler(ctx *types.Context, s *discordgo.Session, m *discordgo.Message
 		return
 	}
 
+	if m.WebhookID != "" {
+		return
+	}
 	channel, err := GetChannels(m.ChannelID, ctx.Config.Channels)
 	if err != nil {
 		return

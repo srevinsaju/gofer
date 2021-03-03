@@ -1,8 +1,8 @@
 package types
 
-
 type GoferMessage struct {
 	From string
+	FromUserProfilePic string
 	Message string
 	ReplyTo string
 	ReplyToMessage string

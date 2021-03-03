@@ -1,6 +1,8 @@
 package discord
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"github.com/bwmarrin/discordgo"
 	"github.com/srevinsaju/gofer/types"
@@ -9,7 +11,18 @@ import (
 )
 
 
+type DiscordWebHook struct {
+	Content string `json:"content"`
+	Username string `json:"username"`
+	AvatarUrl string `json:"avatar_url"`
+}
+
+
 func SendMessage(ctx types.Context, channel types.ChannelMapping, message types.GoferMessage ) error {
+	if channel.DiscordWebhook != "" {
+		return SendWebHookMessage(ctx, channel, message)
+	}
+
 	var strMessage string
 	if message.ReplyTo != "" {
 		strMessage = fmt.Sprintf("> _In reply to **%s**: %s_\n**%s**: %s",
@@ -25,6 +38,34 @@ func SendMessage(ctx types.Context, channel types.ChannelMapping, message types.
 	return nil
 }
 
+
+func SendWebHookMessage(ctx types.Context, channel types.ChannelMapping, message types.GoferMessage ) error {
+	var strMessage string
+	if message.ReplyTo != "" {
+		strMessage = fmt.Sprintf("> _In reply to **%s**: %s_\n%s",
+			message.ReplyTo, message.ReplyToMessage, message.Message)
+	} else {
+		strMessage = message.Message
+	}
+	webhook := DiscordWebHook{
+		Content:   strMessage,
+		Username:  message.From,
+		AvatarUrl: message.FromUserProfilePic,
+	}
+	byteData, err := json.Marshal(webhook)
+	if err != nil {
+		logger.Warn("Failed to marshal json webhook data, ", webhook)
+		return err
+	}
+	resp, err := http.Post(channel.DiscordWebhook, "application/json", bytes.NewReader(byteData))
+	if err != nil {
+		logger.Warnf("Failed to send POST request to webhook, %s", webhook)
+		return err
+	}
+	logger.Infof("Discord webhook returned %s", resp.StatusCode)
+
+	return nil
+}
 
 func SendImage(ctx types.Context, channel types.ChannelMapping, photo types.GoferPhoto ) error {
 	description := ""

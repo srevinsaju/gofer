@@ -61,14 +61,7 @@ func main() {
 
 	telegramBotToken := cfg.TelegramApiToken
 
-	// create the discord bot
-	discordListeners := types.Listeners{
-		File:        discord.SendFile,
-		Message:     discord.SendMessage,
-		Misc:        discord.SendMisc,
-		Photo:       discord.SendImage,
-		EditMessage: discord.SendEdit,
-	}
+
 
 	telegramListeners := types.Listeners{
 		File:        telegram.SendFile,
@@ -111,6 +104,22 @@ func main() {
 		ctx.Discord.Identify.Intents = discordgo.IntentsGuildMessages
 
 		logger.Infof("Authorized on Discord Account")
+
+		// create the discord bot
+		discordListeners := types.Listeners{}
+
+		discordListeners = types.Listeners{
+			File:        discord.SendFile,
+			Message:     discord.SendMessage,
+			Misc:        discord.SendMisc,
+			Photo:       discord.SendImage,
+			EditMessage: discord.SendEdit,
+		}
+
+
+
+
+
         listeners["discord"] = discordListeners
 	}
 
@@ -131,12 +140,12 @@ func main() {
 	}
 
     ctx.Listener = listeners
-	if ctx.Config.DiscordApiToken != "" {
+	if ctx.Config.TelegramApiToken != "" {
 		logger.Info("Starting Telegram event handler")
 		go telegram.EventHandler(*ctx)
 	}
 
-	if ctx.Config.TelegramApiToken != "" {
+	if ctx.Config.DiscordApiToken != "" {
 		logger.Info("Starting Discord event handler")
 		go ctx.Discord.Open()
 	}

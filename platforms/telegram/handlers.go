@@ -114,8 +114,24 @@ func EventHandler(ctx types.Context) {
 			}
 
 			logger.Infof("telegram:[%s] %s", update.Message.From.FirstName, update.Message.Text)
+			photos, err := ctx.Telegram.GetUserProfilePhotos(tgbotapi.UserProfilePhotosConfig{UserID: update.Message.From.ID, Limit: 1})
+			if err != nil {
+				logger.Warnf("Failed to get the profile picture of %s", update.Message.From.ID )
+				return
+			}
+			profilePicUrl := ""
+			if len(photos.Photos) != 0 {
+				logger.Infof("found pic")
+				profilePicUrl, err = ctx.Telegram.GetFileDirectURL(photos.Photos[0][0].FileID)
+				if err != nil {
+					logger.Debugf("Failed to get profile pic url")
+					return
+				}
+			}
+
 			orchestra.SendMessageTo(ctx, channel, "telegram", types.GoferMessage{
 				From:           update.Message.From.FirstName,
+				FromUserProfilePic: profilePicUrl,
 				Message:        update.Message.Text,
 				ReplyTo:        replyTo,
 				ReplyToMessage: replyMessage,
