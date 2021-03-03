@@ -11,7 +11,7 @@ func SendMessage(ctx types.Context, channel types.ChannelMapping, message types.
 	var strMessage string
 	if message.ReplyTo != "" {
 		strMessage = fmt.Sprintf(
-			"<blockquote><i>In reply to <b>%s</b></i>: %s</blockquote>\n<b>%s</b>: %s",
+			"<i>In reply to <b>%s</b></i>: %s\n<b>%s</b>: %s",
 			message.ReplyTo, message.ReplyToMessage, message.From, message.Message)
 	} else {
 		strMessage = fmt.Sprintf("<b>%s</b>: %s", message.From, message.Message)
@@ -42,7 +42,7 @@ func SendEdit(ctx types.Context, channel types.ChannelMapping, message types.Gof
 func SendPhoto(ctx types.Context, channel types.ChannelMapping, photo types.GoferPhoto ) error {
 	strMessage := ""
 	if photo.ReplyToMessage != "" {
-		strMessage = fmt.Sprintf("* <i>In reply to %s</i>\n<blockquote>%s</blockquote>\n\n<i>%s sent a photo</i>\n<a href=\"%s\">.</a>", photo.ReplyTo, photo.ReplyToMessage, photo.From, photo.Url)
+		strMessage = fmt.Sprintf("* <i>In reply to %s</i>\n%s\n\n<i>%s sent a photo</i>\n<a href=\"%s\">.</a>", photo.ReplyTo, photo.ReplyToMessage, photo.From, photo.Url)
 	} else {
 		strMessage = fmt.Sprintf("* <i>%s sent a photo</i>\n<a href=\"%s\">.</a> %s", photo.From, photo.Url, photo.Message)
 	}

@@ -17,18 +17,35 @@ func EventHandler(ctx *types.Context, s *discordgo.Session, m *discordgo.Message
 	}
 
 	// do not process Direct messages
-	if m.Type != 0 {
+	if m.Type != 0 && m.Type != 19 {
 		return
 	}
 
 	if m.WebhookID != "" {
 		return
 	}
+
 	channel, err := GetChannels(m.ChannelID, ctx.Config.Channels)
 	if err != nil {
 		return
 	}
 
+
+	replyTo := ""
+	replyToMessage := ""
+	if m.Message.MessageReference != nil {
+		replyMessage, err := ctx.Discord.ChannelMessage(
+			m.Message.MessageReference.ChannelID, m.Message.MessageReference.MessageID)
+		if err != nil {
+			logger.Warnf("Couldn't get message reference, %s", err)
+			return
+		}
+		replyTo = replyMessage.Author.Username
+		if replyMessage.Member != nil && replyMessage.Member.Nick != "" {
+			replyTo = replyMessage.Member.Nick
+		}
+		replyToMessage = replyMessage.Content
+	}
 
 	from := m.Author.Username
 	if m.Member != nil && m.Member.Nick != "" {
@@ -43,9 +60,9 @@ func EventHandler(ctx *types.Context, s *discordgo.Session, m *discordgo.Message
 				From:           from,
 				Url:            url,
 				Message:        m.Message.ContentWithMentionsReplaced(),
-				ReplyTo:        "",  // fixme
+				ReplyTo:        replyTo,
 				Origin:         "discord",
-				ReplyToMessage: "",
+				ReplyToMessage: replyToMessage,
 			})
 		}
 		return
@@ -62,8 +79,8 @@ func EventHandler(ctx *types.Context, s *discordgo.Session, m *discordgo.Message
 	orchestra.SendMessageTo(*ctx, channel, "discord", types.GoferMessage{
 		From:           from,
 		Message:        m.Message.ContentWithMentionsReplaced(),
-		ReplyTo:        "", // fixme
-		ReplyToMessage: "",
+		ReplyTo:        replyTo,
+		ReplyToMessage: replyToMessage,
 		Origin:         "discord",
 	})
 }
